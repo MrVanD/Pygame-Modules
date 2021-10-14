@@ -106,7 +106,7 @@ movement = 0
 
 jump = 0
 
-jump_distance = -100
+jump_distance = -50
 
 grav = 2
 
@@ -163,7 +163,7 @@ while done == False:
         vel = 0
         character.moveVert(jump)
 
-    print(character.rect.y)
+    #print(character.rect.y)
 
     # Create a list of any sprites, two groups, that have collided
     collisions = pygame.sprite.groupcollide(allFallingObjects,charactersGroup,True,False)
