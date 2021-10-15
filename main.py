@@ -43,19 +43,19 @@ class FallingObject(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
 
         self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0,670)
-        self.rect.y = 0
+        self.rect.x = WIDTH
+        self.rect.y = random.randint(0,HEIGHT)
 
     def setImage(self, graphicSelected):
         fallingObjectImage = pygame.image.load(graphicSelected)
         self.image.blit(fallingObjectImage,(0,0))
 
     def moveFallingObjects(self, distance):
-        if self.rect.y <= 470:
-            self.rect.y = self.rect.y + distance
+        if self.rect.x <= WIDTH:
+            self.rect.x = self.rect.x - distance
 
     def deleteFallingObjects(self, oldscore):
-        if self.rect.y > 470:
+        if self.rect.x < 0:
             self.kill()
             newscore = oldscore + 1
             return newscore
@@ -106,7 +106,7 @@ movement = 0
 
 jump = 0
 
-jump_distance = -50
+jump_distance = -10
 
 grav = 2
 
@@ -140,20 +140,18 @@ while done == False:
             jump = 0
 
     # Update sprites here
-    """
+
     if pygame.time.get_ticks() > nextApple:
         nextObject = FallingObject()
         nextObject.setImage("Apple.png")
         allFallingObjects.add(nextObject)
         nextApple = pygame.time.get_ticks() + 1500
-        difficulty = difficulty + 1
-
 
     for eachObject in (allFallingObjects.sprites()):
-        eachObject.moveFallingObjects(5+difficulty)
+        eachObject.moveFallingObjects(5)
 
         score = eachObject.deleteFallingObjects(score)
-    """
+
 
     character.moveCharacter(movement)
     if jump == 0:
