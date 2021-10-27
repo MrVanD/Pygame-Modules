@@ -1,185 +1,236 @@
-import pygame
-import random
+from enum import Enum
 
+import pygame
+import pygame.freetype
+from pygame.sprite import RenderUpdates
+from pygame.sprite import Sprite
+
+# Import games here
+import DodgeAltered
+
+# Initialise pygame
 pygame.init()
 
+# Set window and font sizes
 WIDTH = 700
 HEIGHT = 500
+FONT_SIZE = 30
 
-screen = pygame.display.set_mode([WIDTH,HEIGHT])
-pygame.display.set_caption("Mr van's Dodge Game")         # Name your window
-background_image = pygame.image.load("OrchardBackground.jpg").convert()
-# Basic Pygame Structure
+# Same colours but defined in a dictionary
+colours = {"BLACK": (0, 0, 0),
+           "WHITE": (255, 255, 255),
+           "RED": (255, 0, 0),
+           "GREEN": (0, 255, 0),
+           "BLUE": (0, 0, 255),
+           }
 
-import pygame                               # Imports pygame and other libraries
-import random
-
-# Define Classes (sprites) here
-
-pygame.init()                               # Pygame is initialised (starts running)
-
-screen = pygame.display.set_mode([700,500]) # Set the width and height of the screen [width,height]
-pygame.display.set_caption("Mr van's Dodge Game")         # Name your window
-background_image = pygame.image.load("OrchardBackground.jpg").convert()
-done = False                                # Loop until the user clicks the close button.
-clock = pygame.time.Clock()                 # Used to manage how fast the screen updates
-BLACK    = (   0,   0,   0)                 # Define some colors using rgb values.  These can be
-WHITE    = ( 255, 255, 255)                 # used throughout the game instead of using rgb values.
-RED      = ( 255, 0, 0)
-GREEN    = (0, 255, 0)
-BLUE     = (0, 0, 255)
-
-font = pygame.font.Font(None, 36)
+# Setup the screen size and the window name
+screen = pygame.display.set_mode([WIDTH, HEIGHT])
+pygame.display.set_caption("Mr van's Dodge Game")
 
 
-# Define additional Functions and Procedures here
-allFallingObjects = pygame.sprite.Group()
+# *** Define Classes Here ***
+class UIElement(Sprite):
+    def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
+        self.mouse_over = False
+        default_image = create_surface_with_text(
+            text=text, font_size=font_size, text_rgb=text_rgb, bg_rgb=bg_rgb
+        )
 
-class FallingObject(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.timeCreated = pygame.time.get_ticks()
-        self.image = pygame.Surface([30,30])
-        self.image.set_colorkey(BLACK)
+        highlighted_image = create_surface_with_text(
+            text=text, font_size=font_size * 1.2, text_rgb=text_rgb, bg_rgb=bg_rgb
+        )
 
-        self.rect = self.image.get_rect()
-        self.rect.x = WIDTH
-        self.rect.y = random.randint(0,HEIGHT)
+        self.images = [default_image, highlighted_image]
+        self.rects = [
+            default_image.get_rect(center=center_position),
+            highlighted_image.get_rect(center=center_position),
+        ]
 
-    def setImage(self, graphicSelected):
-        fallingObjectImage = pygame.image.load(graphicSelected)
-        self.image.blit(fallingObjectImage,(0,0))
+        self.action = action
 
-    def moveFallingObjects(self, distance):
-        if self.rect.x <= WIDTH:
-            self.rect.x = self.rect.x - distance
+        super().__init__()
 
-    def deleteFallingObjects(self, oldscore):
-        if self.rect.x < 0:
-            self.kill()
-            newscore = oldscore + 1
-            return newscore
+    # properties that vary the image and its rect when the mouse is over the element
+    @property
+    def image(self):
+        return self.images[1] if self.mouse_over else self.images[0]
+
+    @property
+    def rect(self):
+        return self.rects[1] if self.mouse_over else self.rects[0]
+
+    def update(self, mouse_pos, mouse_up):
+        if self.rect.collidepoint(mouse_pos):
+            self.mouse_over = True
+            if mouse_up:
+                return self.action
         else:
-            return oldscore
+            self.mouse_over = False
 
-class Character(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface([30,30])
-        self.image.set_colorkey(BLACK)
-
-        self.rect = self.image.get_rect()
-        self.rect.x = 310
-        self.rect.y = 420
-
-        self.image.blit(pygame.image.load("Apple.png"),(0,0))
-
-    def moveCharacter(self, movement):
-        if self.rect.x >= 5 and self.rect.x <= 645:
-            self.rect.x = self.rect.x + movement
-        if self.rect.x < 5:
-            self.rect.x = 5
-        if self.rect.x > 645:
-            self.rect.x = 645
-
-    def moveVert(self, jump):
-        if self.rect.y < HEIGHT and self.rect.y > 0:
-            self.rect.y = self.rect.y + jump
-        if self.rect.y > HEIGHT:
-            self.rect.y = HEIGHT-15
-        if self.rect.y <=0:
-            self.rect.y = 15
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 
+class Player:
+    def __init__(self, score=0, lives=3, current_level=1):
+        self.score = score
+        self.lives = lives
+        self.curent_level = current_level
 
 
-def setup():
-    screen.blit(background_image, [0,0])
+# Game States
+class GameState(Enum):
+    QUIT = -1
+    TITLE = 0
+    NEWGAME = 1
+    LEVEL_PICKER = 2
+    NEXT_LEVEL = 3
+    DODGE = 4
 
-nextApple = pygame.time.get_ticks() + 2500
+# *** Define Functions Here ***
 
-charactersGroup = pygame.sprite.Group()
-character = Character()
-charactersGroup.add(character)
-
-movement = 0
-
-jump = 0
-
-jump_distance = -10
-
-grav = 2
-
-vel = 0
-
-score = 0
-
-lives = 3
-
-difficulty = 0
-
-# -------- Main Program Loop -----------
-while done == False:
-
-    setup()
-
-    for event in pygame.event.get():        # Check for an event (mouse click, key press)
-        if event.type == pygame.QUIT:       # If user clicked close window
-            done = True                     # Flag that we are done so we exit this loop
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                movement = -5-difficulty
-            if event.key == pygame.K_RIGHT:
-                movement = 5+difficulty
-            if event.key == pygame.K_ESCAPE:
-                done = True
-            if event.key == pygame.K_SPACE:
-                jump = jump_distance
-        if event.type == pygame.KEYUP:
-            movement = 0
-            jump = 0
-
-    # Update sprites here
-
-    if pygame.time.get_ticks() > nextApple:
-        nextObject = FallingObject()
-        nextObject.setImage("Apple.png")
-        allFallingObjects.add(nextObject)
-        nextApple = pygame.time.get_ticks() + 1500
-
-    for eachObject in (allFallingObjects.sprites()):
-        eachObject.moveFallingObjects(5)
-
-        score = eachObject.deleteFallingObjects(score)
+def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
+    # Returns a surface with text written on it.
+    font = pygame.freetype.SysFont("Courier", font_size, bold=True)
+    surface, _ = font.render(text=text, fgcolor=text_rgb, bgcolor=bg_rgb)
+    return surface.convert_alpha()
 
 
-    character.moveCharacter(movement)
-    if jump == 0:
-        vel = vel + grav
-        character.moveVert(vel)
-    else:
-        vel = 0
-        character.moveVert(jump)
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    game_state = GameState.TITLE
 
-    #print(character.rect.y)
+    while True:
+        if game_state == GameState.TITLE:
+            game_state = title_screen(screen)
 
-    # Create a list of any sprites, two groups, that have collided
-    collisions = pygame.sprite.groupcollide(allFallingObjects,charactersGroup,True,False)
-    if len(collisions)> 0:
-        lives = lives -1
+        if game_state == GameState.NEWGAME:
+            game_state = play_level(screen)
 
-    if lives <= 0:
-        done = True
+        if game_state == GameState.LEVEL_PICKER:
+            game_state = pick_level(screen)
 
-    screen.blit(background_image, [0,0])
-    allFallingObjects.draw(screen)
-    charactersGroup.draw(screen)
-    scoreImg = font.render("Score: " + str(score),1, GREEN)     # Render the score
-    livesImg = font.render("Lives: " + str(lives),1, GREEN)
-    screen.blit(scoreImg, (10,10))                  # Display the score
-    screen.blit(livesImg, (10,30))
-    pygame.display.flip()                   # Go ahead and update the screen with what we've drawn.
-    clock.tick(30)                          # Limit to 20 frames per second
+        if game_state == GameState.QUIT:
+            pygame.quit()
+            return
+
+        if game_state == GameState.NEWGAME:
+            player = Player()
+            game_state = play_level(screen, player)
+
+        if game_state == GameState.NEXT_LEVEL:
+            player.curent_level += 1
+            game_state = play_level(screen, player)
+
+        if game_state == GameState.DODGE:
+            game_state = play_game(screen, GameState.DODGE)
 
 
-pygame.quit()                               # Close the window and quit.
+def title_screen(screen):
+    start_btn = UIElement(
+        center_position=(WIDTH / 2, (HEIGHT / 2) + 2 * FONT_SIZE),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Pick Level",
+        action=GameState.LEVEL_PICKER,
+    )
+
+    quit_btn = UIElement(
+        center_position=(WIDTH / 2, (HEIGHT / 2) + 4 * FONT_SIZE),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Quit",
+        action=GameState.QUIT,
+    )
+
+    buttons = RenderUpdates(start_btn, quit_btn)
+    return game_loop(screen, buttons)
+
+
+def pick_level(screen):
+    pick_lvl_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT / 2),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Start Level",
+        action=GameState.NEWGAME,
+    )
+
+    dodge_btn = UIElement(
+        center_position=(100, 100),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Dodge",
+        action=GameState.DODGE,
+    )
+
+    return_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT / 2 + FONT_SIZE * 4),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Return to main menu",
+        action=GameState.TITLE,
+    )
+
+    buttons = RenderUpdates(pick_lvl_btn, dodge_btn, return_btn)
+    return game_loop(screen, buttons)
+
+
+def play_level(screen, player):
+    return_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT / 2),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Return to main menu",
+        action=GameState.TITLE,
+    )
+
+    nextlevel_btn = UIElement(
+        center_position=(400, 400),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text=f"Next level ({player.curent_level + 1})",
+        action=GameState.NEXT_LEVEL,
+    )
+
+    buttons = RenderUpdates(return_btn, nextlevel_btn)
+    return game_loop(screen, buttons)
+
+
+def game_loop(screen, buttons):
+    while True:
+        mouse_up = False
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+        screen.fill(colours["BLUE"])
+
+        for button in buttons:
+            ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
+            if ui_action is not None:
+                return ui_action
+
+        buttons.draw(screen)
+        pygame.display.flip()
+
+
+def play_game(screen, game):
+    if game == GameState.DODGE:
+        DodgeAltered.main(screen,colours)
+
+    pygame.display.flip()
+    return GameState.LEVEL_PICKER
+
+
+# Run the main menu
+if __name__ == "__main__":
+    main()
