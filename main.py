@@ -26,7 +26,7 @@ colours = {"BLACK": (0, 0, 0),
 
 # Setup the screen size and the window name
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
-pygame.display.set_caption("Mr van's Dodge Game")
+pygame.display.set_caption("Year 9 Rec Coding Games Library - 2021")
 
 
 # *** Define Classes Here ***
@@ -83,9 +83,7 @@ class Player:
 class GameState(Enum):
     QUIT = -1
     TITLE = 0
-    NEWGAME = 1
-    LEVEL_PICKER = 2
-    NEXT_LEVEL = 3
+    LEVEL_PICKER = 1
     DODGE = 4
 
 # *** Define Functions Here ***
@@ -98,31 +96,22 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
 
 
 def main():
-    pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    # Set the initial Game State
     game_state = GameState.TITLE
 
+    # Check for which game state is currently running
     while True:
+        # Display the Title screen
         if game_state == GameState.TITLE:
             game_state = title_screen(screen)
-
-        if game_state == GameState.NEWGAME:
-            game_state = play_level(screen)
 
         if game_state == GameState.LEVEL_PICKER:
             game_state = pick_level(screen)
 
+        # Quit the game
         if game_state == GameState.QUIT:
             pygame.quit()
             return
-
-        if game_state == GameState.NEWGAME:
-            player = Player()
-            game_state = play_level(screen, player)
-
-        if game_state == GameState.NEXT_LEVEL:
-            player.curent_level += 1
-            game_state = play_level(screen, player)
 
         if game_state == GameState.DODGE:
             game_state = play_game(screen, GameState.DODGE)
@@ -152,15 +141,6 @@ def title_screen(screen):
 
 
 def pick_level(screen):
-    pick_lvl_btn = UIElement(
-        center_position=(WIDTH / 2, HEIGHT / 2),
-        font_size=FONT_SIZE,
-        bg_rgb=colours["BLUE"],
-        text_rgb=colours["WHITE"],
-        text="Start Level",
-        action=GameState.NEWGAME,
-    )
-
     dodge_btn = UIElement(
         center_position=(100, 100),
         font_size=FONT_SIZE,
@@ -179,32 +159,8 @@ def pick_level(screen):
         action=GameState.TITLE,
     )
 
-    buttons = RenderUpdates(pick_lvl_btn, dodge_btn, return_btn)
+    buttons = RenderUpdates(dodge_btn, return_btn)
     return game_loop(screen, buttons)
-
-
-def play_level(screen, player):
-    return_btn = UIElement(
-        center_position=(WIDTH / 2, HEIGHT / 2),
-        font_size=FONT_SIZE,
-        bg_rgb=colours["BLUE"],
-        text_rgb=colours["WHITE"],
-        text="Return to main menu",
-        action=GameState.TITLE,
-    )
-
-    nextlevel_btn = UIElement(
-        center_position=(400, 400),
-        font_size=FONT_SIZE,
-        bg_rgb=colours["BLUE"],
-        text_rgb=colours["WHITE"],
-        text=f"Next level ({player.curent_level + 1})",
-        action=GameState.NEXT_LEVEL,
-    )
-
-    buttons = RenderUpdates(return_btn, nextlevel_btn)
-    return game_loop(screen, buttons)
-
 
 def game_loop(screen, buttons):
     while True:
