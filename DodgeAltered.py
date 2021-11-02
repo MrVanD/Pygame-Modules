@@ -55,8 +55,8 @@ class Character(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
 
         self.rect = self.image.get_rect()
-        self.rect.x = 310
-        self.rect.y = 420
+        self.rect.x = WIDTH/2
+        self.rect.y = HEIGHT/2
 
         self.image.blit(pygame.image.load("Apple.png"),(0,0))
 
@@ -71,10 +71,10 @@ class Character(pygame.sprite.Sprite):
     def moveVert(self, jump):
         if self.rect.y < HEIGHT and self.rect.y > 0:
             self.rect.y = self.rect.y + jump
-        if self.rect.y > HEIGHT:
-            self.rect.y = HEIGHT-15
+        if self.rect.y > HEIGHT-30:
+            self.rect.y = HEIGHT-30
         if self.rect.y <=0:
-            self.rect.y = 15
+            self.rect.y = 5
 
 # -------- Main Program Loop -----------
 def main(screen, colours):
@@ -149,8 +149,14 @@ def main(screen, colours):
         screen.blit(background_image, [0,0])
         allFallingObjects.draw(screen)
         charactersGroup.draw(screen)
-        scoreImg = font.render("Score: " + str(score),1, GREEN)     # Render the score
-        livesImg = font.render("Lives: " + str(lives),1, GREEN)
+        scoreImg = font.render("Score: " + str(score),1, colours["GREEN"])     # Render the score
+        if lives == 3:
+            txt_col = colours["GREEN"]
+        elif lives == 2:
+            txt_col = colours["ORANGE"]
+        elif lives == 1:
+            txt_col = colours["RED"]
+        livesImg = font.render("Lives: " + str(lives),1, txt_col)     # Render the lives
         screen.blit(scoreImg, (10,10))                  # Display the score
         screen.blit(livesImg, (10,30))
         pygame.display.flip()                   # Go ahead and update the screen with what we've drawn.

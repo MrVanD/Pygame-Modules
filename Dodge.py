@@ -127,8 +127,14 @@ def main(screen, colours):
         screen.blit(background_image, [0,0])    # Refresh the screen
         allFallingObjects.draw(screen)          # Draw the falling apples
         charactersGroup.draw(screen)            # Draw the player character
-        scoreImg = font.render("Score: " + str(score),1, GREEN)     # Render the score
-        livesImg = font.render("Lives: " + str(lives),1, GREEN)     # Render the lives
+        scoreImg = font.render("Score: " + str(score),1, colours["GREEN"])     # Render the score
+        if lives == 3:
+            txt_col = colours["GREEN"]
+        elif lives == 2:
+            txt_col = colours["ORANGE"]
+        elif lives == 1:
+            txt_col = colours["RED"]
+        livesImg = font.render("Lives: " + str(lives),1, txt_col)     # Render the lives
         screen.blit(scoreImg, (10,10))          # Display the score
         screen.blit(livesImg, (10,30))          # Disply the remaining lives
         pygame.display.flip()                   # Go ahead and update the screen with what we've drawn.

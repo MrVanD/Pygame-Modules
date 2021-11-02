@@ -24,6 +24,7 @@ colours = {"BLACK": (0, 0, 0),
            "RED": (255, 0, 0),
            "GREEN": (0, 255, 0),
            "BLUE": (0, 0, 255),
+           "ORANGE":(255, 165, 0),
            }
 
 # Setup the screen size and the window name
@@ -218,17 +219,19 @@ def game_loop(screen, buttons):
         buttons.draw(screen)
         pygame.display.flip()
 
-
+# Run the assigned game, pass the screen and colours list through to the chosen games code.
 def play_game(screen, game):
     if game == GameState.DODGE:
+        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Shmup's custom size
         Dodge.main(screen, colours)
     if game == GameState.DODGEALTERED:
+        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Shmup's custom size
         DodgeAltered.main(screen,colours)
     if game == GameState.SHMUP:
-        screen = pygame.display.set_mode((400,600), pygame.RESIZABLE)
+        screen = pygame.display.set_mode((400,600), pygame.RESIZABLE)       # Set screen to Shmup's custom size
         Shmup.main(screen,colours)
 
-    screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)
+    screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)      # Reset screen to menu standard
     pygame.display.flip()
     return GameState.LEVEL_PICKER
 
