@@ -7,6 +7,7 @@ from pygame.sprite import Sprite
 
 # Import games here
 import DodgeAltered
+import Dodge
 
 # Initialise pygame
 pygame.init()
@@ -29,7 +30,7 @@ screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption("Year 9 Rec Coding Games Library - 2021")
 
 
-# *** Define Classes Here ***
+# *** Define Classes Here *** #
 class UIElement(Sprite):
     def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
         self.mouse_over = False
@@ -79,14 +80,29 @@ class Player:
         self.curent_level = current_level
 
 
+
+# To add a game.
+# 1. Import the game.
+# 2. Add its name and a unique identifier to the Game List.
+# 3. Add access programming to the Main Loop.
+# 4. Add a button to the level picker screen.
+# 5. Add a function call in the Play Game definition.
+
+# To do: Automate the addition of new games to reduce complexity on user end.
+
+
 # Game States
 class GameState(Enum):
     QUIT = -1
     TITLE = 0
     LEVEL_PICKER = 1
-    DODGE = 4
 
-# *** Define Functions Here ***
+    # Game List
+    DODGE = 10
+    DODGEALTERED = 11
+
+
+# *** Define Functions Here *** #
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     # Returns a surface with text written on it.
@@ -94,7 +110,7 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     surface, _ = font.render(text=text, fgcolor=text_rgb, bgcolor=bg_rgb)
     return surface.convert_alpha()
 
-
+# Main code running the game
 def main():
     # Set the initial Game State
     game_state = GameState.TITLE
@@ -112,14 +128,17 @@ def main():
         if game_state == GameState.QUIT:
             pygame.quit()
             return
-
+        # Game Access List
         if game_state == GameState.DODGE:
             game_state = play_game(screen, GameState.DODGE)
 
+        if game_state == GameState.DODGEALTERED:
+            game_state = play_game(screen, GameState.DODGEALTERED)
+
 
 def title_screen(screen):
-    start_btn = UIElement(
-        center_position=(WIDTH / 2, (HEIGHT / 2) + 2 * FONT_SIZE),
+    picklvl_btn = UIElement(
+        center_position=(WIDTH / 2, (HEIGHT / 2) - FONT_SIZE),
         font_size=FONT_SIZE,
         bg_rgb=colours["BLUE"],
         text_rgb=colours["WHITE"],
@@ -128,7 +147,7 @@ def title_screen(screen):
     )
 
     quit_btn = UIElement(
-        center_position=(WIDTH / 2, (HEIGHT / 2) + 4 * FONT_SIZE),
+        center_position=(WIDTH / 2, (HEIGHT / 2) + FONT_SIZE),
         font_size=FONT_SIZE,
         bg_rgb=colours["BLUE"],
         text_rgb=colours["WHITE"],
@@ -136,13 +155,22 @@ def title_screen(screen):
         action=GameState.QUIT,
     )
 
-    buttons = RenderUpdates(start_btn, quit_btn)
+    buttons = RenderUpdates(picklvl_btn, quit_btn)
     return game_loop(screen, buttons)
 
 
 def pick_level(screen):
+    dodgealtered_btn = UIElement(
+        center_position=(WIDTH/2, FONT_SIZE*2),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Dodge - Altered",
+        action=GameState.DODGEALTERED,
+    )
+
     dodge_btn = UIElement(
-        center_position=(100, 100),
+        center_position=(WIDTH/2, FONT_SIZE *3),
         font_size=FONT_SIZE,
         bg_rgb=colours["BLUE"],
         text_rgb=colours["WHITE"],
@@ -151,7 +179,7 @@ def pick_level(screen):
     )
 
     return_btn = UIElement(
-        center_position=(WIDTH / 2, HEIGHT / 2 + FONT_SIZE * 4),
+        center_position=(WIDTH / 2, HEIGHT - FONT_SIZE * 2),
         font_size=FONT_SIZE,
         bg_rgb=colours["BLUE"],
         text_rgb=colours["WHITE"],
@@ -159,7 +187,7 @@ def pick_level(screen):
         action=GameState.TITLE,
     )
 
-    buttons = RenderUpdates(dodge_btn, return_btn)
+    buttons = RenderUpdates(dodgealtered_btn, dodge_btn, return_btn)
     return game_loop(screen, buttons)
 
 def game_loop(screen, buttons):
@@ -181,6 +209,8 @@ def game_loop(screen, buttons):
 
 def play_game(screen, game):
     if game == GameState.DODGE:
+        Dodge.main(screen,colours)
+    if game == GameState.DODGEALTERED:
         DodgeAltered.main(screen,colours)
 
     pygame.display.flip()

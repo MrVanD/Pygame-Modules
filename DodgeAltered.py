@@ -76,14 +76,10 @@ class Character(pygame.sprite.Sprite):
         if self.rect.y <=0:
             self.rect.y = 15
 
-
-
-
-
 # -------- Main Program Loop -----------
 def main(screen, colours):
+    print('got here')
     clock = pygame.time.Clock()                 # Used to manage how fast the screen updates
-
 
     font =  pygame.font.Font(None, 36)
     background_image = pygame.image.load("OrchardBackground.jpg").convert()
@@ -94,21 +90,13 @@ def main(screen, colours):
     charactersGroup.add(character)
 
     movement = 0
-
     jump = 0
-
     jump_distance = -10
-
     grav = 2
-
     vel = 0
-
     score = 0
-
     lives = 3
-
     difficulty = 0
-
     done = False
 
     allFallingObjects = pygame.sprite.Group()
@@ -168,6 +156,4 @@ def main(screen, colours):
         pygame.display.flip()                   # Go ahead and update the screen with what we've drawn.
         clock.tick(30)                          # Limit to 20 frames per second
 
-    # Run to exit the game
-    # pygame.display.quit()
     return 2
