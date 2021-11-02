@@ -8,13 +8,14 @@ from pygame.sprite import Sprite
 # Import games here
 import DodgeAltered
 import Dodge
+import Shmup
 
 # Initialise pygame
 pygame.init()
 
 # Set window and font sizes
-WIDTH = 700
-HEIGHT = 500
+WIDTH = 640
+HEIGHT = 480
 FONT_SIZE = 30
 
 # Same colours but defined in a dictionary
@@ -26,7 +27,7 @@ colours = {"BLACK": (0, 0, 0),
            }
 
 # Setup the screen size and the window name
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Year 9 Rec Coding Games Library - 2021")
 
 
@@ -100,6 +101,7 @@ class GameState(Enum):
     # Game List
     DODGE = 10
     DODGEALTERED = 11
+    SHMUP = 12
 
 
 # *** Define Functions Here *** #
@@ -131,9 +133,10 @@ def main():
         # Game Access List
         if game_state == GameState.DODGE:
             game_state = play_game(screen, GameState.DODGE)
-
         if game_state == GameState.DODGEALTERED:
             game_state = play_game(screen, GameState.DODGEALTERED)
+        if game_state == GameState.SHMUP:
+            game_state = play_game(screen, GameState.SHMUP)
 
 
 def title_screen(screen):
@@ -178,6 +181,15 @@ def pick_level(screen):
         action=GameState.DODGE,
     )
 
+    shmup_btn = UIElement(
+        center_position=(WIDTH/2, FONT_SIZE *4),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Shmup",
+        action=GameState.SHMUP,
+    )
+
     return_btn = UIElement(
         center_position=(WIDTH / 2, HEIGHT - FONT_SIZE * 2),
         font_size=FONT_SIZE,
@@ -187,7 +199,7 @@ def pick_level(screen):
         action=GameState.TITLE,
     )
 
-    buttons = RenderUpdates(dodgealtered_btn, dodge_btn, return_btn)
+    buttons = RenderUpdates(dodgealtered_btn, dodge_btn, shmup_btn, return_btn)
     return game_loop(screen, buttons)
 
 def game_loop(screen, buttons):
@@ -209,10 +221,14 @@ def game_loop(screen, buttons):
 
 def play_game(screen, game):
     if game == GameState.DODGE:
-        Dodge.main(screen,colours)
+        Dodge.main(screen, colours)
     if game == GameState.DODGEALTERED:
         DodgeAltered.main(screen,colours)
+    if game == GameState.SHMUP:
+        screen = pygame.display.set_mode((400,600), pygame.RESIZABLE)
+        Shmup.main(screen,colours)
 
+    screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)
     pygame.display.flip()
     return GameState.LEVEL_PICKER
 
