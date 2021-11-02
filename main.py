@@ -2,8 +2,11 @@ from enum import Enum
 
 import pygame
 import pygame.freetype
+from pygame.locals import *
 from pygame.sprite import RenderUpdates
 from pygame.sprite import Sprite
+import os
+import time
 
 # Import games here
 import DodgeAltered
@@ -54,6 +57,7 @@ class UIElement(Sprite):
 
         super().__init__()
 
+
     # properties that vary the image and its rect when the mouse is over the element
     @property
     def image(self):
@@ -98,6 +102,9 @@ class GameState(Enum):
     QUIT = -1
     TITLE = 0
     LEVEL_PICKER = 1
+    CHARACTER_PICKER = 2
+    NewCharacter = 3
+    ChooseCharacter = 4
 
     # Game List
     DODGE = 10
@@ -115,6 +122,13 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
 
 # Main code running the game
 def main():
+    # Initialise the character list.
+    # Check if the character file exists, if it does not, make it.
+    if not os.path.exists("Character List.txt"):            # Check if the character list exists
+        file = open("Character List.txt", "a")              # If it does not, create it
+        file.write("Character List:")                       # Give the character list a title
+        file.close()                                        # Close the character list
+
     # Set the initial Game State
     game_state = GameState.TITLE
 
@@ -126,6 +140,9 @@ def main():
 
         if game_state == GameState.LEVEL_PICKER:
             game_state = pick_level(screen)
+
+        if game_state == GameState.CHARACTER_PICKER:
+            game_state = pick_character(screen)
 
         # Quit the game
         if game_state == GameState.QUIT:
@@ -139,8 +156,21 @@ def main():
         if game_state == GameState.SHMUP:
             game_state = play_game(screen, GameState.SHMUP)
 
+        # If a game state is undefined or unexpected, return to the title screen.
+        else:
+            game_state = title_screen(screen)
+
 
 def title_screen(screen):
+    pickcha_btn = UIElement(
+        center_position=(WIDTH / 2, (HEIGHT / 2) - (FONT_SIZE*3)),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Pick Character",
+        action=GameState.CHARACTER_PICKER,
+    )
+
     picklvl_btn = UIElement(
         center_position=(WIDTH / 2, (HEIGHT / 2) - FONT_SIZE),
         font_size=FONT_SIZE,
@@ -159,7 +189,7 @@ def title_screen(screen):
         action=GameState.QUIT,
     )
 
-    buttons = RenderUpdates(picklvl_btn, quit_btn)
+    buttons = RenderUpdates(pickcha_btn,picklvl_btn, quit_btn)
     return game_loop(screen, buttons)
 
 
@@ -203,6 +233,103 @@ def pick_level(screen):
     buttons = RenderUpdates(dodgealtered_btn, dodge_btn, shmup_btn, return_btn)
     return game_loop(screen, buttons)
 
+def pick_character(screen):
+    return_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT - FONT_SIZE * 2),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Return to main menu",
+        action=GameState.TITLE,
+    )
+
+    # A button to create a new character
+    new_cha_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT/2 - FONT_SIZE * 3),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Create New Character",
+        action=GameState.NewCharacter,
+    )
+
+    # A button to choose an existing character
+    cho_cha_btn = UIElement(
+        center_position=(WIDTH / 2, HEIGHT/2 - FONT_SIZE),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Pick Existing Character",
+        action=GameState.ChooseCharacter,
+    )
+
+    buttons = RenderUpdates(return_btn,new_cha_btn, cho_cha_btn)
+    return characters(screen, buttons)
+
+def characters(screen, buttons):
+    while True:
+        mouse_up = False
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+        screen.fill(colours["BLUE"])
+
+        for button in buttons:
+            ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
+            if ui_action is not None:
+
+                # Run the code to deal with the buttons presses
+                if button.action == GameState.NewCharacter:                 # Create a new character
+                    loop = True                                             # Set loop to run
+                    temp_name_txt = "New Character Name"                    # Set temporary name
+                    instr_txt = "Type a name then press enter to add."      # Set the instructions
+                    font = pygame.font.SysFont(None, 48)                    # Set the font
+                    img = font.render(temp_name_txt, True, colours["RED"])  # Create a render of the name
+                    instr = font.render(instr_txt, True, colours["RED"])    # Create the render of the instructions
+                    rect = img.get_rect()                                   # Create a rectangle with the name
+                    rect.topleft = (20, 20)                                 # Set where the rectangle will spawn
+                    cursor = Rect(rect.topright, (3, rect.height))          # Set where the cursor is set
+                    rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
+                    rect_inst.center = (WIDTH/2, HEIGHT/2)                  # Set the center of the rectangle
+                    while loop == True:
+                        for event in pygame.event.get():
+                            if event.type == KEYDOWN:
+                                if event.key == K_BACKSPACE:
+                                    if len(text) > 0:
+                                        text = text[:-1]
+                                elif event.key == K_RETURN:         # If 'enter' is pressed.
+                                    # Open the character list
+                                    with open("Character List.txt", 'a') as list:
+                                        list.write("\n"+text+" = ")
+                                    # Add the character to the list
+                                    loop =False
+                                else:
+                                    text += event.unicode
+                                    # If length of name is longer than the screen size, trim down the name.
+                                    if img.get_rect().width > WIDTH-48:
+                                        print(img.get_rect().width)
+                                        text = text[:-1]
+                                img = font.render(text, True, colours["RED"])
+                                rect.size=img.get_size()
+                                cursor.topleft = rect.topright
+                        screen.fill(colours["BLUE"])
+                        screen.blit(img, rect)
+                        screen.blit(instr, rect_inst)
+                        if time.time() % 1 > 0.5:
+                            pygame.draw.rect(screen, colours["RED"], cursor)
+                        pygame.display.update()
+
+                elif button.action == GameState.ChooseCharacter:            # Choose an existing character.
+                    print("HAH")
+                else:
+                    return ui_action
+
+
+        buttons.draw(screen)
+        pygame.display.flip()
+
+
+
 def game_loop(screen, buttons):
     while True:
         mouse_up = False
@@ -215,6 +342,7 @@ def game_loop(screen, buttons):
             ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
             if ui_action is not None:
                 return ui_action
+
 
         buttons.draw(screen)
         pygame.display.flip()

@@ -8,11 +8,7 @@ import random
 WIDTH = 700
 HEIGHT = 500
 
-BLACK    = (   0,   0,   0)                 # Define some colors using rgb values.  These can be
-WHITE    = ( 255, 255, 255)                 # used throughout the game instead of using rgb values.
-RED      = ( 255, 0, 0)
-GREEN    = (0, 255, 0)
-BLUE     = (0, 0, 255)
+BLACK    = (   0,   0,   0)                 # Define the RGB colour for black
 
 #screen = pygame.display.set_mode([WIDTH,HEIGHT])
 #pygame.display.set_caption("Mr van's Dodge Game")         # Name your window
