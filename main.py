@@ -34,7 +34,6 @@ colours = {"BLACK": (0, 0, 0),
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Year 9 Rec Coding Games Library - 2021")
 
-
 # *** Define Classes Here *** #
 class UIElement(Sprite):
     def __init__(self, center_position, text, font_size, bg_rgb, text_rgb, action=None):
@@ -122,6 +121,9 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
 
 # Main code running the game
 def main():
+    ### Remove this when player is fully implemented
+    player = {GameState.SHMUP:16}
+    print(player)
     # Initialise the character list.
     # Check if the character file exists, if it does not, make it.
     if not os.path.exists("Character List.txt"):            # Check if the character list exists
@@ -150,11 +152,11 @@ def main():
             return
         # Game Access List
         if game_state == GameState.DODGE:
-            game_state = play_game(screen, GameState.DODGE)
+            game_state = play_game(screen, GameState.DODGE, player)
         if game_state == GameState.DODGEALTERED:
-            game_state = play_game(screen, GameState.DODGEALTERED)
+            game_state = play_game(screen, GameState.DODGEALTERED, player)
         if game_state == GameState.SHMUP:
-            game_state = play_game(screen, GameState.SHMUP)
+            game_state = play_game(screen, GameState.SHMUP, player)
 
         # If a game state is undefined or unexpected, return to the title screen.
         else:
@@ -300,7 +302,13 @@ def characters(screen, buttons):
                                 elif event.key == K_RETURN:         # If 'enter' is pressed.
                                     # Open the character list
                                     with open("Character List.txt", 'a') as list:
-                                        list.write("\n"+text+" = ")
+                                        #Check if the character name already exists
+                                        for line in list:
+                                            name, games = list.split(" = ")
+                                            if name == text:
+                                                print("character already exists")
+                                            else:
+                                                list.write("\n"+text+"=")
                                     # Add the character to the list
                                     loop =False
                                 else:
@@ -348,7 +356,8 @@ def game_loop(screen, buttons):
         pygame.display.flip()
 
 # Run the assigned game, pass the screen and colours list through to the chosen games code.
-def play_game(screen, game):
+def play_game(screen, game, player):
+    print(game)
     if game == GameState.DODGE:
         screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Shmup's custom size
         Dodge.main(screen, colours)
@@ -357,7 +366,10 @@ def play_game(screen, game):
         DodgeAltered.main(screen,colours)
     if game == GameState.SHMUP:
         screen = pygame.display.set_mode((400,600), pygame.RESIZABLE)       # Set screen to Shmup's custom size
-        Shmup.main(screen,colours)
+        new_score = Shmup.main(screen,colours)
+        if player[game] < new_score:
+            player[game] = new_score
+    print(player)
 
     screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)      # Reset screen to menu standard
     pygame.display.flip()

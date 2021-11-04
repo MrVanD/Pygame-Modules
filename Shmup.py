@@ -105,8 +105,8 @@ class Bullet(pygame.sprite.Sprite):
 
 def main(screen, colours):
     score = 0
-    print("got here")
     clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 36)
 
     background = pygame.image.load(path.join('starfield.png')).convert()
     background_rect = background.get_rect()
@@ -153,11 +153,14 @@ def main(screen, colours):
             mobs.add(m)
             score +=1
 
-        print(score)
+
+
         # Draw / render
         screen.fill(BLACK)
         screen.blit(background, background_rect)
         all_sprites.draw(screen)
+        score_img = font.render("Score: " + str(score), 1, colours["GREEN"])  # Render the score
+        screen.blit(score_img, (10, HEIGHT-46))  # Display the score
         # *after* drawing everything, flip the display
         pygame.display.flip()
-    return
+    return score
