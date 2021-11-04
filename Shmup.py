@@ -24,6 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.image = player_img
         self.image = pygame.transform.scale(player_img, (50, 38))
         self.rect = self.image.get_rect()
+        self.radius = 20
         self.image.set_colorkey(BLACK)
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
@@ -54,13 +55,19 @@ class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         meteor_img = pygame.image.load(path.join("meteorBrown_med1.png")).convert()
-        self.image = meteor_img
+        self.image_orig = meteor_img
+        self.image_orig.set_colorkey(BLACK)
+        self.image = self.image_orig.copy()
         self.rect = self.image.get_rect()
-        self.image.set_colorkey(BLACK)
+        #self.image.set_colorkey(BLACK)
+        self.radius = int(self.rect.width * 0.85/2)
         self.rect.x = random.randrange(WIDTH - self.rect.width)
         self.rect.y = random.randrange(-100, -40)
         self.speedy = random.randrange(1, 8)
         self.speedx = random.randrange(-3, 3)
+        self.rot = 0
+        self.rot_speed = random.randrange(-8, 8)
+        self.last_update = pygame.time.get_ticks()
 
     def update(self):
         self.rect.x += self.speedx
@@ -69,6 +76,14 @@ class Mob(pygame.sprite.Sprite):
             self.rect.x = random.randrange(WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 8)
+        self.rotate()
+
+    def rotate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 50:
+            self.last_update = now
+            self.rot = (self.rot + self.rot_speed) % 360
+            self.image = pygame.transform.rotate(self.image_orig, self.rot)
 
 # bullet class
 class Bullet(pygame.sprite.Sprite):
@@ -89,6 +104,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 def main(screen, colours):
+    score = 0
     print("got here")
     clock = pygame.time.Clock()
 
@@ -118,12 +134,14 @@ def main(screen, colours):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     player.shoot(all_sprites,bullets)
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
         # Update
         all_sprites.update()
 
         #check if mobs hit player
-        hits = pygame.sprite.spritecollide(player, mobs, False)
+        hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
         if hits:
             running = False
 
@@ -133,7 +151,9 @@ def main(screen, colours):
             m = Mob()
             all_sprites.add(m)
             mobs.add(m)
+            score +=1
 
+        print(score)
         # Draw / render
         screen.fill(BLACK)
         screen.blit(background, background_rect)
