@@ -46,7 +46,7 @@ class Character(pygame.sprite.Sprite):
         self.rect.x = 315
         self.rect.y = HEIGHT - 30
 
-        self.image.blit(pygame.image.load("Apple.png"), (0, 0))
+        self.image.blit(pygame.image.load("Dodge res/Apple.png"), (0, 0))
 
     def moveCharacter(self, movement):
         if self.rect.x >= 5 and self.rect.x <= 645:
@@ -61,7 +61,7 @@ class Character(pygame.sprite.Sprite):
 def main(screen, colours):
     clock = pygame.time.Clock()  # Used to manage how fast the screen updates
     font = pygame.font.Font(None, 36)
-    background_image = pygame.image.load("OrchardBackground.jpg").convert()
+    background_image = pygame.image.load("Dodge res/OrchardBackground.jpg").convert()
     next_apple = pygame.time.get_ticks() + 2500
 
     charactersGroup = pygame.sprite.Group()

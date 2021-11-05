@@ -11,7 +11,7 @@ HEIGHT = 500
 BLACK    = (   0,   0,   0)                 # Define the RGB colour for black
 
 #screen = pygame.display.set_mode([WIDTH,HEIGHT])
-#pygame.display.set_caption("Mr van's Dodge Game")         # Name your window
+#pygame.display.set_caption("Mr van's Dodge res Game")         # Name your window
 # Basic Pygame Structure
 
 # *** Define Classes Here ***
@@ -54,7 +54,7 @@ class Character(pygame.sprite.Sprite):
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
 
-        self.image.blit(pygame.image.load("Apple.png"),(0,0))
+        self.image.blit(pygame.image.load("Dodge res/Apple.png"), (0, 0))
 
     def moveCharacter(self, movement):
         if self.rect.x >= 5 and self.rect.x <= 645:
@@ -78,7 +78,7 @@ def main(screen, colours):
     clock = pygame.time.Clock()                 # Used to manage how fast the screen updates
 
     font =  pygame.font.Font(None, 36)
-    background_image = pygame.image.load("OrchardBackground.jpg").convert()
+    background_image = pygame.image.load("Dodge res/OrchardBackground.jpg").convert()
     nextApple = pygame.time.get_ticks() + 2500
 
     charactersGroup = pygame.sprite.Group()

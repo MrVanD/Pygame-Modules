@@ -20,7 +20,7 @@ YELLOW = (255, 255, 0)
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        player_img = pygame.image.load(path.join("playerShip1_orange.png")).convert()
+        player_img = pygame.image.load(path.join("Shmup res/playerShip1_orange.png")).convert()
         self.image = player_img
         self.image = pygame.transform.scale(player_img, (50, 38))
         self.rect = self.image.get_rect()
@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        meteor_img = pygame.image.load(path.join("meteorBrown_med1.png")).convert()
+        meteor_img = pygame.image.load(path.join("Shmup res/meteorBrown_med1.png")).convert()
         self.image_orig = meteor_img
         self.image_orig.set_colorkey(BLACK)
         self.image = self.image_orig.copy()
@@ -89,7 +89,7 @@ class Mob(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        bullet_img = pygame.image.load(path.join("laserRed16.png")).convert()
+        bullet_img = pygame.image.load(path.join("Shmup res/laserRed16.png")).convert()
         self.image = bullet_img
         self.rect = self.image.get_rect()
         self.image.set_colorkey(BLACK)
@@ -108,7 +108,7 @@ def main(screen, colours):
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
 
-    background = pygame.image.load(path.join('starfield.png')).convert()
+    background = pygame.image.load(path.join('Shmup res/starfield.png')).convert()
     background_rect = background.get_rect()
 
     all_sprites = pygame.sprite.Group()

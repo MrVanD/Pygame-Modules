@@ -12,6 +12,8 @@ import time
 import DodgeAltered
 import Dodge
 import Shmup
+import TowerDefense
+
 
 # Initialise pygame
 pygame.init()
@@ -109,6 +111,7 @@ class GameState(Enum):
     DODGE = 10
     DODGEALTERED = 11
     SHMUP = 12
+    TOWERDEFENSE = 13
 
 
 # *** Define Functions Here *** #
@@ -157,6 +160,8 @@ def main():
             game_state = play_game(screen, GameState.DODGEALTERED, player)
         if game_state == GameState.SHMUP:
             game_state = play_game(screen, GameState.SHMUP, player)
+        if game_state == GameState.TOWERDEFENSE:
+            game_state = play_game(screen, GameState.TOWERDEFENSE, player)
 
         # If a game state is undefined or unexpected, return to the title screen.
         else:
@@ -223,6 +228,15 @@ def pick_level(screen):
         action=GameState.SHMUP,
     )
 
+    td_btn = UIElement(
+        center_position=(WIDTH/2, FONT_SIZE *5),
+        font_size=FONT_SIZE,
+        bg_rgb=colours["BLUE"],
+        text_rgb=colours["WHITE"],
+        text="Tower Defense",
+        action=GameState.TOWERDEFENSE,
+    )
+
     return_btn = UIElement(
         center_position=(WIDTH / 2, HEIGHT - FONT_SIZE * 2),
         font_size=FONT_SIZE,
@@ -232,7 +246,7 @@ def pick_level(screen):
         action=GameState.TITLE,
     )
 
-    buttons = RenderUpdates(dodgealtered_btn, dodge_btn, shmup_btn, return_btn)
+    buttons = RenderUpdates(dodgealtered_btn, dodge_btn, shmup_btn, td_btn, return_btn)
     return game_loop(screen, buttons)
 
 def pick_character(screen):
@@ -293,39 +307,71 @@ def characters(screen, buttons):
                     cursor = Rect(rect.topright, (3, rect.height))          # Set where the cursor is set
                     rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
                     rect_inst.center = (WIDTH/2, HEIGHT/2)                  # Set the center of the rectangle
+                    char_lst = {}
                     while loop == True:
-                        for event in pygame.event.get():
-                            if event.type == KEYDOWN:
-                                if event.key == K_BACKSPACE:
-                                    if len(text) > 0:
-                                        text = text[:-1]
-                                elif event.key == K_RETURN:         # If 'enter' is pressed.
-                                    # Open the character list
-                                    with open("Character List.txt", 'a') as list:
-                                        #Check if the character name already exists
-                                        for line in list:
-                                            name, games = list.split(" = ")
-                                            if name == text:
-                                                print("character already exists")
+                        # Create a character list
+                        # Open the character profile list
+                        with open("Character List.txt") as file:
+                            # Loop through all lines of the text
+                            for line in file:
+                                # If a character is found, add it to the list
+                                if "=" in line:
+                                    character = line[:-11]                   # Remove the = from the name
+                                    char_lst[character] = "Shmup res - 0\n"
+                            for event in pygame.event.get():
+                                if event.type == KEYDOWN:
+                                    if event.key == K_RETURN:         # If 'enter' is pressed.
+                                        # Open the character list
+                                        list_keys = char_lst.keys()
+                                        #print("Key List")
+                                        #print(list_keys)
+                                        if len(list_keys) < 1:
+                                            # add the character to the temporary list
+                                            char_lst[temp_name_txt] = "Shmup res - 0"+'\n'
+                                            #print(char_lst)
+                                        for key in list_keys:
+                                            #print("Key")
+                                            #print(key)
+                                            # Check if character exists in the keys.
+                                            if key == temp_name_txt:
+                                                # Print that the character exists
+                                                print("Character Exists")       # Change this to a splash screen
+                                                # Exit the character creation
+                                                loop = False
                                             else:
-                                                list.write("\n"+text+"=")
-                                    # Add the character to the list
-                                    loop =False
-                                else:
-                                    text += event.unicode
-                                    # If length of name is longer than the screen size, trim down the name.
-                                    if img.get_rect().width > WIDTH-48:
-                                        print(img.get_rect().width)
-                                        text = text[:-1]
-                                img = font.render(text, True, colours["RED"])
-                                rect.size=img.get_size()
-                                cursor.topleft = rect.topright
-                        screen.fill(colours["BLUE"])
-                        screen.blit(img, rect)
-                        screen.blit(instr, rect_inst)
-                        if time.time() % 1 > 0.5:
-                            pygame.draw.rect(screen, colours["RED"], cursor)
-                        pygame.display.update()
+                                                # add the character to the temporary list
+                                                char_lst[temp_name_txt] = "Shmup res - 0\n"
+                                                print(char_lst)
+                                                break
+                                        loop =False
+                                    if event.key == K_BACKSPACE:
+                                        if len(temp_name_txt) > 0:
+                                            temp_name_txt = temp_name_txt[:-1]
+                                    else:
+                                        temp_name_txt += event.unicode
+                                        # If length of name is longer than the screen size, trim down the name.
+                                        if img.get_rect().width > WIDTH-48:
+                                            print(img.get_rect().width)
+                                            temp_name_txt = temp_name_txt[:-1]
+                                    img = font.render(temp_name_txt, True, colours["RED"])
+                                    rect.size=img.get_size()
+                                    cursor.topleft = rect.topright
+                            screen.fill(colours["BLUE"])
+                            screen.blit(img, rect)
+                            screen.blit(instr, rect_inst)
+                            if time.time() % 1 > 0.5:
+                                pygame.draw.rect(screen, colours["RED"], cursor)
+                            pygame.display.update()
+
+
+                        if loop == False:
+                            print("loop = false")
+                            print(char_lst)
+                            with open("Character List.txt", "w") as file:
+                                file.write("Character List:\n")
+                                list_keys = char_lst.keys()
+                                for key in list_keys:
+                                    file.write(key+"="+char_lst[key]+"\n")
 
                 elif button.action == GameState.ChooseCharacter:            # Choose an existing character.
                     print("HAH")
@@ -357,19 +403,20 @@ def game_loop(screen, buttons):
 
 # Run the assigned game, pass the screen and colours list through to the chosen games code.
 def play_game(screen, game, player):
-    print(game)
     if game == GameState.DODGE:
-        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Shmup's custom size
+        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Dodge's custom size
         Dodge.main(screen, colours)
     if game == GameState.DODGEALTERED:
-        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Shmup's custom size
+        screen = pygame.display.set_mode((700,500), pygame.RESIZABLE)       # Set screen to Dodge - Altered's custom size
         DodgeAltered.main(screen,colours)
     if game == GameState.SHMUP:
         screen = pygame.display.set_mode((400,600), pygame.RESIZABLE)       # Set screen to Shmup's custom size
         new_score = Shmup.main(screen,colours)
         if player[game] < new_score:
             player[game] = new_score
-    print(player)
+    if game == GameState.TOWERDEFENSE:
+        screen = pygame.display.set_mode((600,400), pygame.RESIZABLE)       # Set screen to Tower Defense's custom size
+        TowerDefense.main(screen)
 
     screen = pygame.display.set_mode((WIDTH,HEIGHT), pygame.RESIZABLE)      # Reset screen to menu standard
     pygame.display.flip()
