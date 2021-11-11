@@ -93,7 +93,7 @@ def main(screen, colours):
         # Update sprites here
         if pygame.time.get_ticks() > next_apple:
             next_object = FallingObject()
-            next_object.setImage("Apple.png")
+            next_object.setImage("Dodge res/Apple.png")
             allFallingObjects.add(next_object)
             next_apple = pygame.time.get_ticks() + 1500
 

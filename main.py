@@ -127,13 +127,13 @@ def main():
     ### Remove this when player is fully implemented
     player = {GameState.SHMUP:16}
     print(player)
+    '''
     # Initialise the character list.
     # Check if the character file exists, if it does not, make it.
     if not os.path.exists("Character List.txt"):            # Check if the character list exists
-        file = open("Character List.txt", "a")              # If it does not, create it
-        file.write("Character List:")                       # Give the character list a title
+        file = open("Character List.txt", "x")              # If it does not, create it
         file.close()                                        # Close the character list
-
+    '''
     # Set the initial Game State
     game_state = GameState.TITLE
 
@@ -293,7 +293,75 @@ def characters(screen, buttons):
         for button in buttons:
             ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
             if ui_action is not None:
+                if button.action == GameState.TITLE:
+                    return ui_action
+                else:
+                    # Get a list of existing characters and write them to a dictionary
+                    character_list = {}             # Create the dictionary and make it empty
+                    with open("Character List.txt") as file:
+                        try:
+                            for line in file:                                       # Iterate over each line
+                                character, shmup, dodge, td = line.split("|")       # Split up each line into idividual blocks
+                                shmup = int(shmup)                                  # Set each score to an integer
+                                dodge = int(dodge)
+                                td = int(td)
+                                games = [shmup,dodge,td]                            # Collate all scores into an array
+                                character_list[character] = games                   # Add data to the character dictionary
+                        except:
+                            print("failed")
+                    if button.action == GameState.NewCharacter:
+                        loop = True                                             # Set loop to run
+                        temp_name_txt = "New Character Name"                    # Set temporary name
+                        instr_txt = "Type a name then press enter to add."      # Set the instructions
+                        font = pygame.font.SysFont(None, 48)                    # Set the font
+                        img = font.render(temp_name_txt, True, colours["RED"])  # Create a render of the name
+                        instr = font.render(instr_txt, True, colours["RED"])    # Create the render of the instructions
+                        rect = img.get_rect()                                   # Create a rectangle with the name
+                        rect.topleft = (20, 20)                                 # Set where the rectangle will spawn
+                        cursor = Rect(rect.topright, (3, rect.height))          # Set where the cursor is set
+                        rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
+                        rect_inst.center = (WIDTH/2, HEIGHT/2)                  # Set the center of the rectangle
+                        # Loop while creating a new name
+                        while loop == True:
+                            for event in pygame.event.get():                    # Get event list
+                                if event.type == KEYDOWN:                       # If the event list contains a keydown action
+                                    if event.key == K_RETURN:                   # If that action is the return key
+                                        if temp_name_txt in character_list:     # If the name is already in the character list
+                                            print("Character already exists")
+                                        else:
+                                            character_list[temp_name_txt] =[0,0,0]
+                                        loop = False
+                                    elif event.key == K_BACKSPACE:
+                                        if len(temp_name_txt) > 0:
+                                            temp_name_txt = temp_name_txt[:-1]
+                                    else:
+                                        temp_name_txt += event.unicode
+                                        # If length of name is longer than the screen size, trim down the name.
+                                        if img.get_rect().width > WIDTH-48:
+                                            print(img.get_rect().width)
+                                            temp_name_txt = temp_name_txt[:-1]
+                                    img = font.render(temp_name_txt, True, colours["RED"])
+                                    rect.size=img.get_size()
+                                    cursor.topleft = rect.topright
+                            screen.fill(colours["BLUE"])
+                            screen.blit(img, rect)
+                            screen.blit(instr, rect_inst)
+                            if time.time() % 1 > 0.5:
+                                pygame.draw.rect(screen, colours["RED"], cursor)
+                            pygame.display.update()
+                        # Loop through the character list dictionary to save the character to the file
+                        with open("Character List.txt", 'w') as file:           # Open the character file.
+                            for character in character_list:
+                                print(character)
+                                print(character_list[character])
+                                entry = character+"|"+\
+                                        str(character_list[character][0])+"|"+\
+                                        str(character_list[character][1])+"|"+\
+                                        str(character_list[character][2])+"\n"
+                                file.write(entry)
 
+
+                """
                 # Run the code to deal with the buttons presses
                 if button.action == GameState.NewCharacter:                 # Create a new character
                     loop = True                                             # Set loop to run
@@ -317,7 +385,7 @@ def characters(screen, buttons):
                                 # If a character is found, add it to the list
                                 if "=" in line:
                                     character = line[:-11]                   # Remove the = from the name
-                                    char_lst[character] = "Shmup res - 0\n"
+                                    char_lst[character] = "Shmup - 0\n"
                             for event in pygame.event.get():
                                 if event.type == KEYDOWN:
                                     if event.key == K_RETURN:         # If 'enter' is pressed.
@@ -327,7 +395,7 @@ def characters(screen, buttons):
                                         #print(list_keys)
                                         if len(list_keys) < 1:
                                             # add the character to the temporary list
-                                            char_lst[temp_name_txt] = "Shmup res - 0"+'\n'
+                                            char_lst[temp_name_txt] = "Shmup - 0"+'\n'
                                             #print(char_lst)
                                         for key in list_keys:
                                             #print("Key")
@@ -374,10 +442,20 @@ def characters(screen, buttons):
                                     file.write(key+"="+char_lst[key]+"\n")
 
                 elif button.action == GameState.ChooseCharacter:            # Choose an existing character.
-                    print("HAH")
+                    # Create a character list
+                    char_list={}
+                    with open("Character List.txt", 'r') as file:
+                        for line in file:
+                            print(line)
+                            if "=" in line:
+                                print("got here")
+                                character, shmup = line.split("=")
+                                char_list[character] = shmup
+                        print(char_list)
+                
                 else:
                     return ui_action
-
+                """
 
         buttons.draw(screen)
         pygame.display.flip()

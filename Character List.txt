@@ -1,0 +1,5 @@
+New Character Name|1|1|1
+New Character Name1|2|2|2
+New Character Name2|0|0|0
+New Character Name3|0|0|0
+New Character Name4|0|0|0
