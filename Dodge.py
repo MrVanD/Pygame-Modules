@@ -131,4 +131,4 @@ def main(screen, colours):
         clock.tick(30)  # Limit game to 30 frames per second
 
     # End game, return to the level picker screen
-    return
+    return score

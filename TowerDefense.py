@@ -286,23 +286,4 @@ def main(screen):
             if ((e.type == KEYDOWN) and (e.key == K_ESCAPE)):
                 game_over = False
 
-    """
-        if running == True:
-            #screen.fill((0,0,0))
-            screen.blit(backimg, (0,0))
-            for i in range(0, len(baddies)):
-                baddies[i].move()
-                baddies[i].draw()
-            for i in range(0, len(towers)):
-                towers[i].shoot()
-                towers[i].draw()
-            #pygame.display.flip()
-    """
-    # Reset Parameters
-    baddies = []
-    bullets = []
-    towers = []
-
-    empty_squares = []
-
-    return
+    return score
