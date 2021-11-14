@@ -283,22 +283,23 @@ def pick_character(screen):
     return characters(screen, buttons)
 
 def characters(screen, buttons):
+    # Loop until action is taken
     while True:
-        mouse_up = False
-        for event in pygame.event.get():
+        mouse_up = False                                                            # Reset mouse state to unclicked
+        for event in pygame.event.get():                                            # Check for a right mouse click
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
-        screen.fill(colours["BLUE"])
-
+        screen.fill(colours["BLUE"])                                                # Reset the background screen colour
+        # Check if a button was pressed
         for button in buttons:
             ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
             if ui_action is not None:
-                if button.action == GameState.TITLE:
+                if button.action == GameState.TITLE:                                # If the button pressed was return
                     return ui_action
                 else:
-                    # Get a list of existing characters and write them to a dictionary
-                    character_list = {}             # Create the dictionary and make it empty
-                    with open("Character List.txt") as file:
+                    # Get a list of existing characters and their scores and write them to a dictionary
+                    character_list = {}                                             # Create the dictionary and make it empty
+                    with open("Character List.txt") as file:                        # Open up the character file
                         try:
                             for line in file:                                       # Iterate over each line
                                 character, shmup, dodge, td = line.split("|")       # Split up each line into idividual blocks
@@ -308,58 +309,60 @@ def characters(screen, buttons):
                                 games = [shmup,dodge,td]                            # Collate all scores into an array
                                 character_list[character] = games                   # Add data to the character dictionary
                         except:
-                            print("failed")
-                    if button.action == GameState.NewCharacter:
-                        loop = True                                             # Set loop to run
-                        temp_name_txt = "New Character Name"                    # Set temporary name
-                        instr_txt = "Type a name then press enter to add."      # Set the instructions
-                        font = pygame.font.SysFont(None, 48)                    # Set the font
-                        img = font.render(temp_name_txt, True, colours["RED"])  # Create a render of the name
-                        instr = font.render(instr_txt, True, colours["RED"])    # Create the render of the instructions
-                        rect = img.get_rect()                                   # Create a rectangle with the name
-                        rect.topleft = (20, 20)                                 # Set where the rectangle will spawn
-                        cursor = Rect(rect.topright, (3, rect.height))          # Set where the cursor is set
-                        rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
-                        rect_inst.center = (WIDTH/2, HEIGHT/2)                  # Set the center of the rectangle
-                        # Loop while creating a new name
+                            print("failed")                                         # If the attempt to read fails (i.e. no lines)
+                    # Create a new character
+                    if button.action == GameState.NewCharacter:                     # Check if button was for a new character
+                        loop = True                                                 # Set loop to run
+                        new_cha_text = "New Character Name"                         # Set temporary new character name
+                        instr_txt = "Type a name then press enter to add."          # Set the instructions
+                        font = pygame.font.SysFont(None, 48)                        # Set the font
+                        instr = font.render(instr_txt, True, colours["RED"])        # Create the render of the instructions
+                        rect_inst = instr.get_rect()                                # Get the rectangle of the instructions
+                        rect_inst.center = (WIDTH/2, HEIGHT/2)                      # Set the center of the rectangle
+                        # Loop while creating a new character
                         while loop == True:
-                            for event in pygame.event.get():                    # Get event list
-                                if event.type == KEYDOWN:                       # If the event list contains a keydown action
-                                    if event.key == K_RETURN:                   # If that action is the return key
-                                        if temp_name_txt in character_list:     # If the name is already in the character list
-                                            print("Character already exists")
+                            for event in pygame.event.get():                        # Get event list
+                                if event.type == KEYDOWN:                           # If the event list contains a keydown action
+                                    if event.key == K_RETURN:                       # If that action is the return key
+                                        if new_cha_text in character_list:          # If the name is already in the character list
+                                            print("Character already exists")       # Handler for if the character already exists
                                         else:
-                                            character_list[temp_name_txt] =[0,0,0]
+                                            character_list[new_cha_text] =[0,0,0]   # Set new character and give basic game stats
+                                        loop = False                                # Break out of loop
+                                    elif event.key == K_BACKSPACE:                  # If key is backspace
+                                        if len(new_cha_text) > 0:                   # Check that character name isn't less than 1
+                                            new_cha_text = new_cha_text[:-1]        # Remove the last character from the string
+                                    elif event.key == K_ESCAPE:                     # If the escape key is pressed
+                                        print("escape") # Remove: Temp Code
                                         loop = False
-                                    elif event.key == K_BACKSPACE:
-                                        if len(temp_name_txt) > 0:
-                                            temp_name_txt = temp_name_txt[:-1]
                                     else:
-                                        temp_name_txt += event.unicode
-                                        # If length of name is longer than the screen size, trim down the name.
-                                        if img.get_rect().width > WIDTH-48:
-                                            print(img.get_rect().width)
-                                            temp_name_txt = temp_name_txt[:-1]
-                                    img = font.render(temp_name_txt, True, colours["RED"])
-                                    rect.size=img.get_size()
-                                    cursor.topleft = rect.topright
-                            screen.fill(colours["BLUE"])
-                            screen.blit(img, rect)
-                            screen.blit(instr, rect_inst)
-                            if time.time() % 1 > 0.5:
+                                        new_cha_text += event.unicode               # Add the character to the string
+                                        if new_cha.get_rect().width > WIDTH-48:     # If length of name is longer than the screen size
+                                            new_cha_text = new_cha_text[:-1]        # Trim down the name.
+                            # Display the new character name and a cursor
+                            new_cha = font.render(new_cha_text, True, colours["RED"])
+                            new_cha_rect = new_cha.get_rect()                       # Create a rectangle with the name
+                            new_cha_rect.topleft = (20, 20)                         # Set where the rectangle will spawn
+                            new_cha_rect.size=new_cha.get_size()
+                            cursor = Rect(new_cha_rect.topright,                    # Set the cursor size
+                                          (3, new_cha_rect.height))
+                            cursor.topleft = new_cha_rect.topright                  # Set where te cursor is
+                            screen.fill(colours["BLUE"])                            # Refresh the screen
+                            screen.blit(new_cha, new_cha_rect)                      # Display the editable name
+                            screen.blit(instr, rect_inst)                           # Display the instructions
+                            if time.time() % 1 > 0.5:                               # Blink the cursor
                                 pygame.draw.rect(screen, colours["RED"], cursor)
                             pygame.display.update()
-                        # Loop through the character list dictionary to save the character to the file
+                        # Save the character to the file
                         with open("Character List.txt", 'w') as file:           # Open the character file.
-                            for character in character_list:
-                                print(character)
-                                print(character_list[character])
+                            for character in character_list:                    # Loop through each character
+                                # Add each character with their scores and correct formatting
                                 entry = character+"|"+\
                                         str(character_list[character][0])+"|"+\
                                         str(character_list[character][1])+"|"+\
                                         str(character_list[character][2])+"\n"
-                                file.write(entry)
-
+                                file.write(entry)                               # Write the character
+                    # If the user wants to choose an existing character
                     elif button.action == GameState.ChooseCharacter:
                         # Create a dictionary with the character details.
                         with open("Character List.txt", "r") as file:
@@ -385,10 +388,10 @@ def characters(screen, buttons):
                             char_index = 1
                             for character in character_list:
                                 text = str(char_index)+". "+character
-                                img = font.render(text, True, colours["RED"])
-                                rect_text = img.get_rect()
+                                new_cha = font.render(text, True, colours["RED"])
+                                rect_text = new_cha.get_rect()
                                 rect_text.center = (WIDTH/2, char_height*char_index)
-                                screen.blit(img, rect_text)
+                                screen.blit(new_cha, rect_text)
                                 char_index += 1
                             # Output instructions and set instruction box size
                             instr = font.render(instruction, True, colours["RED"])    # Create the render of the instructions
@@ -433,14 +436,14 @@ def characters(screen, buttons):
                 # Run the code to deal with the buttons presses
                 if button.action == GameState.NewCharacter:                 # Create a new character
                     loop = True                                             # Set loop to run
-                    temp_name_txt = "New Character Name"                    # Set temporary name
+                    new_cha_text = "New Character Name"                    # Set temporary name
                     instr_txt = "Type a name then press enter to add."      # Set the instructions
                     font = pygame.font.SysFont(None, 48)                    # Set the font
-                    img = font.render(temp_name_txt, True, colours["RED"])  # Create a render of the name
+                    new_cha = font.render(new_cha_text, True, colours["RED"])  # Create a render of the name
                     instr = font.render(instr_txt, True, colours["RED"])    # Create the render of the instructions
-                    rect = img.get_rect()                                   # Create a rectangle with the name
-                    rect.topleft = (20, 20)                                 # Set where the rectangle will spawn
-                    cursor = Rect(rect.topright, (3, rect.height))          # Set where the cursor is set
+                    new_cha_rect = new_cha.get_rect()                                   # Create a rectangle with the name
+                    new_cha_rect.topleft = (20, 20)                                 # Set where the rectangle will spawn
+                    cursor = Rect(new_cha_rect.topright, (3, new_cha_rect.height))          # Set where the cursor is set
                     rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
                     rect_inst.center = (WIDTH/2, HEIGHT/2)                  # Set the center of the rectangle
                     char_lst = {}
@@ -463,40 +466,40 @@ def characters(screen, buttons):
                                         #print(list_keys)
                                         if len(list_keys) < 1:
                                             # add the character to the temporary list
-                                            char_lst[temp_name_txt] = "Shmup - 0"+'\n'
+                                            char_lst[new_cha_text] = "Shmup - 0"+'\n'
                                             #print(char_lst)
                                         for key in list_keys:
                                             #print("Key")
                                             #print(key)
                                             # Check if character exists in the keys.
-                                            if key == temp_name_txt:
+                                            if key == new_cha_text:
                                                 # Print that the character exists
                                                 print("Character Exists")       # Change this to a splash screen
                                                 # Exit the character creation
                                                 loop = False
                                             else:
                                                 # add the character to the temporary list
-                                                char_lst[temp_name_txt] = "Shmup res - 0\n"
+                                                char_lst[new_cha_text] = "Shmup res - 0\n"
                                                 print(char_lst)
                                                 break
                                         loop =False
                                     if event.key == K_BACKSPACE:
-                                        if len(temp_name_txt) > 0:
-                                            temp_name_txt = temp_name_txt[:-1]
+                                        if len(new_cha_text) > 0:
+                                            new_cha_text = new_cha_text[:-1]
                                     else:
-                                        temp_name_txt += event.unicode
+                                        new_cha_text += event.unicode
                                         # If length of name is longer than the screen size, trim down the name.
-                                        if img.get_rect().width > WIDTH-48:
-                                            print(img.get_rect().width)
-                                            temp_name_txt = temp_name_txt[:-1]
-                                    img = font.render(temp_name_txt, True, colours["RED"])
-                                    rect.size=img.get_size()
-                                    cursor.topleft = rect.topright
+                                        if new_cha.get_rect().width > WIDTH-48:
+                                            print(new_cha.get_rect().width)
+                                            new_cha_text = new_cha_text[:-1]
+                                    new_cha = font.render(new_cha_text, True, colours["RED"])
+                                    new_cha_rect.size=new_cha.get_size()
+                                    cursor.topleft = new_cha_rect.topright
                             screen.fill(colours["BLUE"])
-                            screen.blit(img, rect)
+                            screen.blit(new_cha, new_cha_rect)
                             screen.blit(instr, rect_inst)
                             if time.time() % 1 > 0.5:
-                                pygame.draw.rect(screen, colours["RED"], cursor)
+                                pygame.draw.new_cha_rect(screen, colours["RED"], cursor)
                             pygame.display.update()
 
 
