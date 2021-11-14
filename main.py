@@ -360,6 +360,74 @@ def characters(screen, buttons):
                                         str(character_list[character][2])+"\n"
                                 file.write(entry)
 
+                    elif button.action == GameState.ChooseCharacter:
+                        # Create a dictionary with the character details.
+                        with open("Character List.txt", "r") as file:
+                            for line in file:                                       # Iterate over each line
+                                character, shmup, dodge, td = line.split("|")       # Split up each line into individual blocks
+                                shmup = int(shmup)                                  # Set each score to an integer
+                                dodge = int(dodge)
+                                td = int(td)
+                                games = [shmup,dodge,td]                            # Collate all scores into an array
+                                character_list[character] = games                   # Add data to the character dictionary
+                        # Create a loop until a character choice is made
+                        chosen = False
+                        # Setup some variables and statics
+                        char_height = FONT_SIZE
+                        font = pygame.font.SysFont(None, 48)                    # Set the font
+                        # Create instructions
+                        instruction = "Choose your character and press enter."
+                        answer = ""
+                        while chosen == False:
+                            # Refresh the screen with a blue fill
+                            screen.fill(colours["BLUE"])
+                            # Loop over each character in the dictionary and display them on the screen.
+                            char_index = 1
+                            for character in character_list:
+                                text = str(char_index)+". "+character
+                                img = font.render(text, True, colours["RED"])
+                                rect_text = img.get_rect()
+                                rect_text.center = (WIDTH/2, char_height*char_index)
+                                screen.blit(img, rect_text)
+                                char_index += 1
+                            # Output instructions and set instruction box size
+                            instr = font.render(instruction, True, colours["RED"])    # Create the render of the instructions
+                            rect_inst = instr.get_rect()                            # Get the rectangle of the instructions
+                            rect_inst.center = (WIDTH/2, HEIGHT - FONT_SIZE*2)                  # Set the center of the rectangle
+                            # Handle button presses
+                            for event in pygame.event.get():
+                                if event.type == KEYDOWN:
+                                    if event.key == pygame.K_BACKSPACE:
+                                        if len(answer) > 0:
+                                            answer = answer[:-1]
+                                    elif event.key == K_RETURN:
+                                        if len(answer) == 1:
+                                            # Character chosen, return the character chosen
+                                            chosen = True
+                                        else:
+                                            print("error in chosen character")
+                                    else:
+                                        answer += event.unicode
+                                        # If length of name is longer than the screen size, trim down the name.
+                                        if ans.get_rect().width > WIDTH-48:
+                                            print(ans.get_rect().width)
+                                            answer = answer[:-1]
+                            # Generate the render and box for the answer
+                            ans = font.render(answer, True, colours["RED"])
+                            rect_ans = ans.get_rect()
+                            rect_ans.center = (WIDTH/2, HEIGHT-FONT_SIZE)
+
+                            # Update the display
+                            cursor = Rect(rect_inst.topright, (3, rect_inst.height))          # Set where the cursor is set
+                            cursor.topleft = rect_ans.topright
+                            screen.blit(instr, rect_inst)
+                            screen.blit(ans, rect_ans)
+
+                            if time.time() % 1 > 0.5:
+                                pygame.draw.rect(screen, colours["RED"], cursor)
+                            pygame.display.update()
+
+
 
                 """
                 # Run the code to deal with the buttons presses
