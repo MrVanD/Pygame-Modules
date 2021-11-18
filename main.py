@@ -15,8 +15,10 @@ import Shmup
 import TowerDefense
 
 
-### Current known limitations ###
+### Current known limitations and errors###
 # changing players without closing the game will probably result in the old character score changes not being saved.
+# issue when clicking buttons, sometimes a second button press is needed. need to investigate where the hold-up is.
+
 
 # Initialise pygame
 pygame.init()
