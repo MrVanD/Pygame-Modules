@@ -116,6 +116,12 @@ def main(screen, colours):
     bullets = pygame.sprite.Group()
     player = Player()
     all_sprites.add(player)
+
+    sfx = pygame.mixer.Sound('Shmup res/pew.wav')
+    pygame.mixer.music.load("Shmup res/loop.ogg")
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
+
     for i in range(8):
         m = Mob()
         all_sprites.add(m)
@@ -134,6 +140,7 @@ def main(screen, colours):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     player.shoot(all_sprites,bullets)
+                    sfx.play()
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
@@ -163,4 +170,5 @@ def main(screen, colours):
         screen.blit(score_img, (10, HEIGHT-46))  # Display the score
         # *after* drawing everything, flip the display
         pygame.display.flip()
+    pygame.mixer.music.stop()
     return score

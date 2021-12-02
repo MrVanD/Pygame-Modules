@@ -1,4 +1,4 @@
-New Character Name|0|0|2
+New Character Name|0|0|0
 New Character Name1|2|2|2
 New Character Name2|0|0|0
 New Character Name3|0|0|0
@@ -6,3 +6,5 @@ New Character Name4|0|0|0
 New Char|0|0|0
 New Character|0|0|0
 Hunter|0|18|1
+Bob|0|16|0
+Bob2|100|100|100
