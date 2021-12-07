@@ -323,6 +323,7 @@ def characters(screen, buttons):
     player["shmup"] = 0
     player["td"] = 0
 
+
     # Loop until action is taken
     while True:
         mouse_up = False                                                            # Reset mouse state to unclicked
